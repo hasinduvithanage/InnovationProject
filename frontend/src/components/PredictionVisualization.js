@@ -1,94 +1,140 @@
-// src/objects/PredictionVisualization.js
-import React, { useState } from 'react';
-import axios from '../services/api';
-import styles from '../styles/PredictionForm.module.css';
-import PredictionBarChart from '../components/visualizations/PredictionBarChart'; // Bar chart component
+import React, { useState } from "react";
+import axios from "axios";
+import { Bar } from "react-chartjs-2";
+import "../styles/Visualizer.css";
 
-const PredictionVisualization = () => {
-  const [formData, setFormData] = useState({
-    airline: '',
-    source_city: '',
-    departure_time: '',
-    stops: '',
-    arrival_time: '',
-    destination_city: '',
-    class_type: '',
-    duration: '',
-    days_left: ''
-  });
-  const [predictedPrice, setPredictedPrice] = useState(null);
-  const [error, setError] = useState('');
+function PredictionVisualization() {
+    const [sourceCity, setSourceCity] = useState("Delhi");
+    const [departureTime, setDepartureTime] = useState("Evening");
+    const [stops, setStops] = useState("zero");
+    const [arrivalTime, setArrivalTime] = useState("Night");
+    const [destinationCity, setDestinationCity] = useState("Mumbai");
+    const [classType, setClassType] = useState("Economy");
+    const [duration, setDuration] = useState(2.5);
+    const [daysLeft, setDaysLeft] = useState(10);
+    const [predictions, setPredictions] = useState([]);
 
-  // Handle form input changes
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+    const handleSubmit = async () => {
+        try {
+            const response = await axios.post("http://localhost:8000/predict_airline_prices", {
+                airline: "SpiceJet", // Default airline, but it is ignored in batch prediction
+                flight: "SG-8709",
+                source_city: sourceCity,
+                departure_time: departureTime,
+                stops: stops,
+                arrival_time: arrivalTime,
+                destination_city: destinationCity,
+                class: classType,
+                duration: parseFloat(duration),
+                days_left: parseInt(daysLeft),
+            });
 
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const formattedData = {
-        ...formData,
-        flight: "0",  // Set flight to 0 by default
-        class: formData.class_type,
-        duration: parseFloat(formData.duration),
-        days_left: parseInt(formData.days_left, 10)
-      };
-      delete formattedData.class_type;
+            setPredictions(response.data.airline_prices);
+        } catch (error) {
+            console.error("Error fetching predictions:", error);
+        }
+    };
 
-      // Request prediction from backend
-      const response = await axios.post('/predict', formattedData);
-      setPredictedPrice(response.data.price);
-      setError('');
-    } catch (err) {
-      if (err.response && err.response.data && err.response.data.detail) {
-        setError(`Error: ${err.response.data.detail}`);
-      } else {
-        setError('An unexpected error occurred. Please try again.');
-      }
-    }
-  };
+    // Prepare data for the bar chart
+    const chartData = {
+        labels: predictions.map(prediction => Object.keys(prediction)[0]),
+        datasets: [
+            {
+                label: "Predicted Flight Prices",
+                data: predictions.map(prediction => Object.values(prediction)[0]),
+                backgroundColor: "rgba(75,192,192,0.4)",
+                borderColor: "rgba(75,192,192,1)",
+                borderWidth: 1,
+            },
+        ],
+    };
 
-  return (
-    <div className={styles.homemain}>
-      <h2>Predict Flight Price and View Visualization</h2>
-      <form onSubmit={handleSubmit}>
-        {/* Form fields, similar to PredictionForm.js */}
-        <label htmlFor="airline">Airline:</label><br/>
-        <select id="airline" name="airline" value={formData.airline} onChange={handleChange}>
-          <option value="">Select Airline</option>
-          <option value="Air_India">Air India</option>
-          <option value="AirAsia">AirAsia</option>
-          <option value="GO_FIRST">GO FIRST</option>
-          <option value="Indigo">Indigo</option>
-          <option value="SpiceJet">SpiceJet</option>
-          <option value="Vistara">Vistara</option>
-        </select><br/><br/>
+    return (
+        <div className="App">
+            <h1>Flight Price Predictor</h1>
+            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+                <label>Source City:</label>
+                <select value={sourceCity} onChange={(e) => setSourceCity(e.target.value)}>
+                    <option>Delhi</option>
+                    <option>Mumbai</option>
+                    <option>Bangalore</option>
+                    <option>Kolkata</option>
+                    <option>Hyderabad</option>
+                    <option>Chennai</option>
+                </select>
 
-        {/* Add other input fields as in PredictionForm */}
-        <label htmlFor="duration">Duration (in hours):</label><br/>
-        <input id="duration" name="duration" value={formData.duration} onChange={handleChange} placeholder="Duration" type="number"/><br/><br/>
+                <label>Departure Time:</label>
+                <select value={departureTime} onChange={(e) => setDepartureTime(e.target.value)}>
+                    <option>Evening</option>
+                    <option>Early_Morning</option>
+                    <option>Morning</option>
+                    <option>Afternoon</option>
+                    <option>Night</option>
+                    <option>Late_Night</option>
+                </select>
 
-        <label htmlFor="days_left">Days Left Until Departure:</label><br/>
-        <input id="days_left" name="days_left" value={formData.days_left} onChange={handleChange} placeholder="Days Left" type="number"/><br/><br/>
+                <label>Stops:</label>
+                <select value={stops} onChange={(e) => setStops(e.target.value)}>
+                    <option>zero</option>
+                    <option>one</option>
+                    <option>two_or_more</option>
+                </select>
 
-        <button type="submit">Get Prediction</button>
-        <br/><br/>
-      </form>
+                <label>Arrival Time:</label>
+                <select value={arrivalTime} onChange={(e) => setArrivalTime(e.target.value)}>
+                    <option>Night</option>
+                    <option>Morning</option>
+                    <option>Early_Morning</option>
+                    <option>Afternoon</option>
+                    <option>Evening</option>
+                    <option>Late_Night</option>
+                </select>
 
-      {/* Display error if exists */}
-      {error && <div className={styles.error}>{error}</div>}
+                <label>Destination City:</label>
+                <select value={destinationCity} onChange={(e) => setDestinationCity(e.target.value)}>
+                    <option>Delhi</option>
+                    <option>Mumbai</option>
+                    <option>Bangalore</option>
+                    <option>Kolkata</option>
+                    <option>Hyderabad</option>
+                    <option>Chennai</option>
+                </select>
 
-      {/* Display the bar chart with prediction */}
-      {predictedPrice && (
-        <PredictionBarChart predictions={[predictedPrice]} />
-      )}
-    </div>
-  );
-};
+                <label>Class:</label>
+                <select value={classType} onChange={(e) => setClassType(e.target.value)}>
+                    <option>Economy</option>
+                    <option>Business</option>
+                </select>
+
+                <label>Duration (hours):</label>
+                <input
+                    type="number"
+                    step="0.1"
+                    min="1"
+                    max="15"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                />
+
+                <label>Days Left:</label>
+                <input
+                    type="number"
+                    min="1"
+                    max="49"
+                    value={daysLeft}
+                    onChange={(e) => setDaysLeft(e.target.value)}
+                />
+
+                <button type="submit">Get Predictions</button>
+            </form>
+
+            <div className="chart-container">
+                {predictions.length > 0 && (
+                    <Bar data={chartData} />
+                )}
+            </div>
+        </div>
+    );
+}
 
 export default PredictionVisualization;

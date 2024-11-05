@@ -1,9 +1,9 @@
-// /src/objects/Visualization.js
+// /src/objects/DataAnalysis.js
 import React from 'react';
 import BarChart from '../components/visualizations/BarChart';
 import LineChart from '../components/visualizations/LineChart';
 
-const Visualization = () => {
+const DataAnalysis = () => {
   // Data for the Bar Chart (e.g., average ticket price by airline)
   const barChartData = {
     labels: ['AirAsia', 'Air India', 'GO FIRST', 'Indigo', 'SpiceJet', 'Vistara'],
@@ -61,4 +61,4 @@ const Visualization = () => {
   );
 };
 
-export default Visualization;
+export default DataAnalysis;
