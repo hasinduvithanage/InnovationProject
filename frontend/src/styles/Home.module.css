@@ -1,0 +1,82 @@
+/* src/Home.module.css */
+
+.homeContainer {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Blur the background image */
+.homeContainer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: inherit; /* Inherits the inline background image */
+  background-size: cover;
+  background-position: center;
+  filter: blur(8px); /* Adjust blur intensity as desired */
+  z-index: 1;
+}
+
+/* Dark overlay for text visibility */
+.overlay {
+  position: relative;
+  z-index: 2;
+  background-color: rgba(0, 0, 0, 0.75); /* Darker overlay for better contrast */
+  color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 800px;
+}
+
+h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+p {
+  font-size: 1.2em;
+  margin-bottom: 30px;
+  color: #ffffff; /* Set paragraph text to pure white */
+}
+
+.infoCards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.card {
+  background-color: #ffffff;
+  color: #333;
+  padding: 15px;
+  border-radius: 8px;
+  width: 200px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.startButton {
+  background-color: #007bff;
+  color: #ffffff;
+  font-size: 1.1em;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.startButton:hover {
+  background-color: #0056b3;
+}
