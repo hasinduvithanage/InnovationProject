@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Dict
-
+import os
 # Initialize FastAPI app
 app = FastAPI()
 
@@ -153,3 +153,40 @@ async def get_data():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+from functools import lru_cache
+@lru_cache(maxsize=100)
+def load_model_results():
+    results_dir = 'Data/'
+
+    model_files = {
+        'RandomForestRegressor': 'Results_merged_RandomForest.csv',
+        'XGBRegressor': 'Results_merged_XGBoost.csv',
+        'ExtraTreesRegressor': 'Results_merged_ExtraTrees.csv',
+        'DecisionTreeRegressor': 'Results_merged_DecisionTree.csv',
+    }
+
+    data = {}
+
+    for model_name, filename in model_files.items():
+        file_path = os.path.join(results_dir, filename)
+        try:
+            df = pd.read_csv(file_path)
+            # Only read necessary columns to reduce memory usage
+            data[model_name] = df[['days_left', 'Actual_Price', 'Predicted_Price']].to_dict(orient='records')
+        except FileNotFoundError as e:
+            print(f"File not found: {e}")
+            raise HTTPException(status_code=404, detail=f"File {filename} not found")
+        except Exception as e:
+            print(f"Error reading {filename}: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    return data
+
+@app.get("/get_model_results")
+async def get_model_results():
+    try:
+        return load_model_results()
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Unexpected error occurred.")
