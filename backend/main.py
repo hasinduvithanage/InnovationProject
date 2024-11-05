@@ -3,6 +3,7 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from typing import List, Dict
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -30,6 +31,10 @@ encoding_mappings = {
     'class': {'Business': 0, 'Economy': 1}
 }
 
+# List of all airlines
+all_airlines = ["AirAsia", "Air_India", "GO_FIRST", "Indigo", "SpiceJet", "Vistara"]
+
+
 # Define request and response schemas
 class PredictionRequest(BaseModel):
     airline: str = Field(..., example="SpiceJet")
@@ -43,27 +48,41 @@ class PredictionRequest(BaseModel):
     duration: float = Field(..., example=2.17)
     days_left: int = Field(..., example=1)
 
+
 class PredictionResponse(BaseModel):
     price: float
 
+
+# Define the response schema for the airline prices
+class AirlinePriceResponse(BaseModel):
+    airline_prices: List[Dict[str, float]]
+
+
 # Helper function to preprocess input data
-def preprocess_input(data: PredictionRequest) -> pd.DataFrame:
+def preprocess_input(data: PredictionRequest, airline: str = None) -> pd.DataFrame:
     # Convert to dictionary using alias for "class" field
     input_data = data.dict(by_alias=True)
-    print("Input Data Received:", input_data)  # Debugging line to check input data
 
-    # Create DataFrame and apply label encoding for categorical columns
+    # If airline is provided (for batch prediction), set it in the data dictionary
+    if airline:
+        input_data['airline'] = airline
+    else:
+        input_data['airline'] = data.airline  # Use the specified airline for single prediction
+
     input_df = pd.DataFrame([input_data])
 
-    # Apply label encoding for categorical columns, skipping the 'flight' field
+    # Fill 'flight' column with a placeholder value, since the model expects it
+    input_df['flight'] = 0  # Or use input_df['flight'] = float('nan')
+
+    # Apply label encoding for categorical columns
     for column, mapping in encoding_mappings.items():
-        if column in input_df.columns and column != 'flight':  # Skip flight column
+        if column in input_df.columns:
             input_df[column] = input_df[column].map(mapping).fillna(0)
 
-    print("Processed Input DataFrame:", input_df)  # Debugging line to check processed data
     return input_df
 
-# Endpoint for predicting flight price
+
+# Endpoint for predicting flight price for a single airline
 @app.post("/predict", response_model=PredictionResponse)
 async def get_prediction(data: PredictionRequest):
     try:
@@ -77,5 +96,26 @@ async def get_prediction(data: PredictionRequest):
         return PredictionResponse(price=prediction)
 
     except Exception as e:
-        # Handle errors and return an HTTP exception
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Endpoint for predicting prices for all airlines
+@app.post("/predict_airline_prices", response_model=AirlinePriceResponse)
+async def get_airline_prices(data: PredictionRequest):
+    try:
+        airline_prices = []
+        for airline in all_airlines:
+            # Preprocess the input data for each airline
+            input_df = preprocess_input(data, airline)
+
+            # Predict the price for the current airline
+            predicted_price = model.predict(input_df)[0]
+
+            # Append the airline and its predicted price as a dictionary
+            airline_prices.append({airline: predicted_price})
+
+        # Return the list of airline price predictions
+        return AirlinePriceResponse(airline_prices=airline_prices)
+
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
