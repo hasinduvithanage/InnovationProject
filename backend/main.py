@@ -17,8 +17,14 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-# Load the trained model
-model = joblib.load('models/extra_trees_regressor_model.joblib')
+# Load the trained models
+models = {
+    'RandomForestRegressor': joblib.load('models/random_forest_regressor_model.joblib'),
+    'XGBRegressor': joblib.load('models/xgb_regressor_model.joblib'),
+    'ExtraTreesRegressor': joblib.load('models/extra_trees_regressor_model.joblib'),
+    'DecisionTreeRegressor': joblib.load('models/decision_tree_regressor_model.joblib'),
+}
+
 
 # Define encoding mappings based on training data
 encoding_mappings = {
@@ -34,11 +40,11 @@ encoding_mappings = {
 # List of all airlines
 all_airlines = ["AirAsia", "Air_India", "GO_FIRST", "Indigo", "SpiceJet", "Vistara"]
 
+from typing import Optional
 
-# Define request and response schemas
 class PredictionRequest(BaseModel):
     airline: str = Field(..., example="SpiceJet")
-    flight: str = Field(..., example="SG-8709")  # Keep flight as a string
+    flight: str = Field(..., example="SG-8709")
     source_city: str = Field(..., example="Delhi")
     departure_time: str = Field(..., example="Evening")
     stops: str = Field(..., example="zero")
@@ -47,6 +53,8 @@ class PredictionRequest(BaseModel):
     class_type: str = Field(..., alias="class", example="Economy")
     duration: float = Field(..., example=2.17)
     days_left: int = Field(..., example=1)
+    model_name: Optional[str] = Field('ExtraTreesRegressor', example="ExtraTreesRegressor")
+
 
 
 class PredictionResponse(BaseModel):
@@ -63,12 +71,16 @@ def preprocess_input(data: PredictionRequest, airline: str = None) -> pd.DataFra
     # Convert to dictionary using alias for "class" field
     input_data = data.dict(by_alias=True)
 
+    # Remove 'model_name' from input_data before creating DataFrame
+    input_data.pop('model_name', None)  # Remove the model_name key
+
     # If airline is provided (for batch prediction), set it in the data dictionary
     if airline:
         input_data['airline'] = airline
     else:
         input_data['airline'] = data.airline  # Use the specified airline for single prediction
 
+    # Create DataFrame after removing 'model_name'
     input_df = pd.DataFrame([input_data])
 
     # Fill 'flight' column with a placeholder value, since the model expects it
@@ -79,7 +91,11 @@ def preprocess_input(data: PredictionRequest, airline: str = None) -> pd.DataFra
         if column in input_df.columns:
             input_df[column] = input_df[column].map(mapping).fillna(0)
 
+    # Optional: Print the columns to verify 'model_name' is not included
+    print("Columns in input_df:", input_df.columns.tolist())
+
     return input_df
+
 
 
 # Endpoint for predicting flight price for a single airline
@@ -89,8 +105,14 @@ async def get_prediction(data: PredictionRequest):
         # Preprocess the input data
         input_df = preprocess_input(data)
 
-        # Predict the flight price using the model
-        prediction = model.predict(input_df)[0]
+        # Get the selected model
+        selected_model = models.get(data.model_name)
+        if not selected_model:
+            selected_model = models['ExtraTreesRegressor']
+            #raise HTTPException(status_code=400, detail="Model not found")
+
+        # Predict the flight price using the selected model
+        prediction = selected_model.predict(input_df)[0]
 
         # Return the prediction as a JSON response
         return PredictionResponse(price=prediction)
@@ -119,3 +141,15 @@ async def get_airline_prices(data: PredictionRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/data")
+async def get_data():
+    try:
+        # Read your dataset
+        df = pd.read_csv('backend/data.csv')
+        # Convert DataFrame to a list of dictionaries
+        data = df.to_dict(orient='records')
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

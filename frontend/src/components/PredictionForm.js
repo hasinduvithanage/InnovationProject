@@ -12,7 +12,8 @@ const PredictionForm = () => {
     destination_city: '',
     class_type: '',  // Use class_type to avoid reserved keyword issue
     duration: '',    // Ensure this is sent as a float
-    days_left: ''    // Ensure this is sent as an integer
+    days_left: '',    // Ensure this is sent as an integer
+    model_name: 'ExtraTreesRegressor', // Default model
   });
   const [predictedPrice, setPredictedPrice] = useState(null);
   const [error, setError] = useState('');
@@ -142,6 +143,14 @@ const PredictionForm = () => {
         <label htmlFor="days_left">Days Left Until Departure:</label><br/>
         <input id="days_left" name="days_left" value={formData.days_left} onChange={handleChange}
                placeholder="Days Left" type="number"/><br/><br/>
+
+        <label htmlFor="model_name">Select Model:</label><br/>
+        <select id="model_name" name="model_name" value={formData.model_name} onChange={handleChange}>
+          <option value="RandomForestRegressor">Random Forest Regressor</option>
+          <option value="XGBRegressor">XGBoost Regressor</option>
+          <option value="ExtraTreesRegressor">Extra Trees Regressor</option>
+          <option value="DecisionTreeRegressor">Decision Tree Regressor</option>
+        </select><br/><br/>
 
         <button type="submit">Get Prediction</button>
         <br/><br/>
