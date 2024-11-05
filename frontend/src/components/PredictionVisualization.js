@@ -49,7 +49,11 @@ function PredictionVisualization() {
         ],
     };
 
-    // Chart options
+    // Dynamically determine the minimum y-axis value
+    const minPredictionValue = Math.min(...predictions.map(prediction => Object.values(prediction)[0]));
+    const yAxisMin = minPredictionValue * 0.9; // Set min to 90% of the lowest value for padding
+
+    // Chart options with dynamic y-axis minimum
     const chartOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -90,7 +94,9 @@ function PredictionVisualization() {
                     font: {
                         size: 14,
                     },
-                    beginAtZero: true,
+                    beginAtZero: false, // Ensure y-axis does not start at zero
+                    min: yAxisMin, // Explicitly set the minimum
+                    suggestedMin: yAxisMin, // Suggested min to support dynamic scaling
                 },
             },
         },
