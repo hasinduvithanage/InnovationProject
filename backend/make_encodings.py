@@ -17,9 +17,8 @@ def load_model_results():
     for model_name, filename in model_files.items():
         file_path = os.path.join(results_dir, filename)
         df = pd.read_csv(file_path)
+        df['Prediction_Error'] = df['Predicted_Price'] - df['Actual_Price']
 
-        # Select only the necessary columns
-        #df = df[['days_left', 'Actual_Price', 'Predicted_Price']].copy()
 
         # Add a column with the model name
         df['model_name'] = model_name

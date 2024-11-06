@@ -22,10 +22,10 @@ const VisualizationsPage = () => {
       {/*  <RoutePriceComparison />*/}
       {/*</section>*/}
 
-      {/*<section>*/}
-      {/*  <h2>3. Prediction Error Distribution by Model</h2>*/}
-      {/*  <PredictionErrorDistribution />*/}
-      {/*</section>*/}
+      <section>
+        <h2>3. Prediction Error Distribution by Model</h2>
+        <PredictionErrorDistribution />
+      </section>
 
       {/*<section>*/}
       {/*  <h2>4. Top 10 Most and Least Expensive Routes Predicted by Models</h2>*/}

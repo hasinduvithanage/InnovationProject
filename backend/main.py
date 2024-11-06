@@ -7,6 +7,7 @@ from typing import List, Dict
 import os
 import json
 from functools import lru_cache
+from MakeHeatMapData import convert_and_save_heatmap_data
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -168,7 +169,7 @@ def load_model_results():
         grouped = df.groupby('model_name')
         for model_name, group in grouped:
             # Convert each group's DataFrame to a list of dictionaries
-            data[model_name] = group[['days_left', 'Actual_Price', 'Predicted_Price']].to_dict(orient='records')
+            data[model_name] = group[['days_left', 'Actual_Price', 'Predicted_Price', 'Prediction_Error']].to_dict(orient='records')
     except FileNotFoundError as e:
         print(f"File not found: {e}")
         raise HTTPException(status_code=404, detail=f"File {results_file} not found")
@@ -197,45 +198,12 @@ def get_inverse_mappings():
 @app.get("/get_heatmap_data")
 def get_heatmap_data(model_name: str = 'RandomForestRegressor'):
     try:
-        # Step 1: Load the dataset
-        if not os.path.exists('Data/Results_merged.csv'):
-            raise FileNotFoundError("Data/Results_merged.csv not found.")
-        df = pd.read_csv('Data/Results_merged.csv')
+        # Determine the file name based on the model name
+        file_name = f'heatmap_data_{model_name}.json'
 
-        # Step 2: Filter data for the selected model
-        if 'model_name' not in df.columns:
-            raise ValueError("'model_name' column not found in the dataset.")
-        df = df[df['model_name'] == model_name]
-
-        if df.empty:
-            raise ValueError(f"No data found for model_name: {model_name}")
-
-        # Step 3: Aggregate data
-        if 'airline' not in df.columns or 'days_left' not in df.columns or 'Predicted_Price' not in df.columns:
-            raise ValueError("Required columns ('airline', 'days_left', 'Predicted_Price') not found in the dataset.")
-
-        aggregated_df = df.groupby(['airline', 'days_left'])['Predicted_Price'].mean().reset_index()
-
-        # Step 4: Load and apply inverse mappings if 'airline' is label-encoded
-        if not os.path.exists('inverse_encoding_mappings.json'):
-            raise FileNotFoundError("inverse_encoding_mappings.json not found.")
-        with open('inverse_encoding_mappings.json', 'r') as f:
-            inverse_mappings = json.load(f)
-
-        if 'airline' not in inverse_mappings:
-            raise KeyError("Key 'airline' not found in inverse encoding mappings.")
-
-        airline_mapping = {int(k): v for k, v in inverse_mappings['airline'].items()}
-
-        # Apply decoding
-        aggregated_df['airline'] = aggregated_df['airline'].map(airline_mapping)
-
-        # Step 5: Handle NaN and Infinity values in 'Predicted_Price'
-        aggregated_df.replace([np.inf, -np.inf], np.nan, inplace=True)
-        aggregated_df.dropna(subset=['Predicted_Price'], inplace=True)
-
-        # Step 6: Convert DataFrame to list of dictionaries
-        data = aggregated_df.to_dict(orient='records')
+        # Load data from the specific JSON file
+        with open(file_name, 'r') as f:
+            data = json.load(f)
 
         return data
 
