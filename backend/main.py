@@ -254,38 +254,38 @@ class WeatherDataResponse(BaseModel):
     wind_direction: int
     date_time: str
 
-# @app.get("/get_weather_data", response_model=WeatherDataResponse)
-# async def get_weather_data(lat: float, lon: float):
-#     conn = http.client.HTTPSConnection("rapidweather.p.rapidapi.com")
-#
-#     headers = {
-#         'x-rapidapi-key': "d0897fb5f7msh048a3d319f81dcap103a53jsn8c7b09d1906f",
-#         'x-rapidapi-host': "rapidweather.p.rapidapi.com"
-#     }
-#
-#     try:
-#         # Make API request to fetch weather data
-#         conn.request("GET", f"/data/2.5/forecast?lat={lat}&lon={lon}", headers=headers)
-#         res = conn.getresponse()
-#         data = res.read()
-#         raw_data = json.loads(data.decode("utf-8"))
-#
-#         # Process and structure weather data to only return relevant information
-#         item = raw_data["list"][0]
-#         forecast_data = {
-#             "temperature": item["main"]["temp"],
-#             "feels_like": item["main"]["feels_like"],
-#             "temp_min": item["main"]["temp_min"],
-#             "temp_max": item["main"]["temp_max"],
-#             "pressure": item["main"]["pressure"],
-#             "humidity": item["main"]["humidity"],
-#             "weather": item["weather"][0]["description"],
-#             "wind_speed": item["wind"]["speed"],
-#             "wind_direction": item["wind"]["deg"],
-#             "date_time": item["dt_txt"]
-#         }
-#
-#         return forecast_data
-#
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
+@app.get("/get_weather_data", response_model=WeatherDataResponse)
+async def get_weather_data(lat: float, lon: float):
+    conn = http.client.HTTPSConnection("rapidweather.p.rapidapi.com")
+
+    headers = {
+        'x-rapidapi-key': "d0897fb5f7msh048a3d319f81dcap103a53jsn8c7b09d1906f",
+        'x-rapidapi-host': "rapidweather.p.rapidapi.com"
+    }
+
+    try:
+        # Make API request to fetch weather data
+        conn.request("GET", f"/data/2.5/forecast?lat={lat}&lon={lon}", headers=headers)
+        res = conn.getresponse()
+        data = res.read()
+        raw_data = json.loads(data.decode("utf-8"))
+
+        # Process and structure weather data to only return relevant information
+        item = raw_data["list"][0]
+        forecast_data = {
+            "temperature": item["main"]["temp"],
+            "feels_like": item["main"]["feels_like"],
+            "temp_min": item["main"]["temp_min"],
+            "temp_max": item["main"]["temp_max"],
+            "pressure": item["main"]["pressure"],
+            "humidity": item["main"]["humidity"],
+            "weather": item["weather"][0]["description"],
+            "wind_speed": item["wind"]["speed"],
+            "wind_direction": item["wind"]["deg"],
+            "date_time": item["dt_txt"]
+        }
+
+        return forecast_data
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
