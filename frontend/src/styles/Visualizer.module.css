@@ -134,19 +134,23 @@
 .weatherContainer {
     margin-top: 50px;
     margin-left: 0;
+    margin-bottom: 50px;
     background-color: #ffffff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 900px;
+    max-width: 700px;
+    max-height: 500px;
 }
+
 
 .weatherColumns {
     display: flex;
     justify-content: space-between;
-    gap: 100px; /* Adjust the gap as needed */
-    width: 800px;
+    gap: 60px; /* Adjust the gap as needed */
+    width: 700px;
+    height: 450px;
 }
 
 .weatherColumns > div {
@@ -159,7 +163,7 @@
 /* Weather item styling */
 .weatherItem {
     border-bottom: 1px solid #ddd;
-    padding: 10px 0;
+    padding: 5px 0;
 }
 
 .weatherItem:last-child {

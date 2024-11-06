@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Plot from 'react-plotly.js';
-import styles from "../styles/Visualizer.module.css";
+import styles from "../styles/HeatMap.module.css";
 
 const PricePredictionHeatmap = () => {
   const [heatmapData, setHeatmapData] = useState(null);
@@ -48,44 +48,45 @@ const PricePredictionHeatmap = () => {
   };
 
   return (
-    <div>
-      <label className={styles.labelText}>Select Model: </label>
-      <select
-        id="model-select"
-        value={selectedModel}
-        onChange={(e) => setSelectedModel(e.target.value)} className={styles.selectInput}>
-      >
-        <option value="RandomForestRegressor">RandomForestRegressor</option>
-        <option value="XGBRegressor">XGBRegressor</option>
-        <option value="ExtraTreesRegressor">ExtraTreesRegressor</option>
-        <option value="DecisionTreeRegressor">DecisionTreeRegressor</option>
-      </select>
+      <div className={styles.selectContainer}>
+        <label className={styles.labelText}>Select Model: </label>
+        <select
+            id="model-select"
+            value={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+            className={styles.selectInput}
+        >
+          <option value="RandomForestRegressor">RandomForestRegressor</option>
+          <option value="XGBRegressor">XGBRegressor</option>
+          <option value="ExtraTreesRegressor">ExtraTreesRegressor</option>
+          <option value="DecisionTreeRegressor">DecisionTreeRegressor</option>
+        </select>
 
-      {heatmapData ? (
-        <Plot
-          data={[
-            {
-              x: heatmapData.x,
-              y: heatmapData.y,
-              z: heatmapData.z,
-              type: 'heatmap',
-              colorscale: 'Viridis',
-              reversescale: true,
-            },
-          ]}
-          layout={{
-            title: `Price Prediction Heatmap (${selectedModel})`,
-            xaxis: { title: 'Days till Departure' },
-            yaxis: { title: 'Airline' },
-            autosize: true,
-          }}
-          useResizeHandler={true}
-          style={{ width: '100%', height: '600px' }}
-        />
-      ) : (
-        <p>Loading heatmap data...</p>
-      )}
-    </div>
+        {heatmapData ? (
+            <Plot
+                data={[
+                  {
+                    x: heatmapData.x,
+                    y: heatmapData.y,
+                    z: heatmapData.z,
+                    type: 'heatmap',
+                    colorscale: 'Viridis',
+                    reversescale: true,
+                  },
+                ]}
+                layout={{
+                  title: `Price Prediction Heatmap (${selectedModel})`,
+                  xaxis: {title: 'Days till Departure'},
+                  yaxis: {title: 'Airline'},
+                  autosize: true,
+                }}
+                useResizeHandler={true}
+                style={{width: '100%', height: '600px'}}
+            />
+        ) : (
+            <p>Loading heatmap data...</p>
+        )}
+      </div>
   );
 };
 

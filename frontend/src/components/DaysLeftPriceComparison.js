@@ -18,27 +18,10 @@ const DaysLeftPriceComparison = () => {
   }, []);
 
   const processChartData = (data) => {
-    // Aggregate data to reduce clutter
-    const aggregatedData = {};
+    const daysLeft = data.map(item => item.days_left);
+    const actualPrices = data.map(item => item.actual_price);
 
-    Object.keys(data).forEach((modelName) => {
-      data[modelName].forEach((item) => {
-        const day = item.days_left;
-        if (!aggregatedData[day]) {
-          aggregatedData[day] = { actual: 0, predicted: {}, count: 0 };
-        }
-        aggregatedData[day].actual += item.Actual_Price;
-        aggregatedData[day].count += 1;
-        if (!aggregatedData[day].predicted[modelName]) {
-          aggregatedData[day].predicted[modelName] = 0;
-        }
-        aggregatedData[day].predicted[modelName] += item.Predicted_Price;
-      });
-    });
-
-    const daysLeft = Object.keys(aggregatedData).map(Number).sort((a, b) => a - b);
-    const actualPrices = daysLeft.map(day => (aggregatedData[day].actual / aggregatedData[day].count) / 4);
-
+    // Prepare datasets for charting
     const datasets = [
       {
         label: 'Actual Price',
@@ -50,12 +33,14 @@ const DaysLeftPriceComparison = () => {
       },
     ];
 
-    Object.keys(data).forEach((modelName) => {
-      const predictedPrices = daysLeft.map(day => aggregatedData[day].predicted[modelName] / aggregatedData[day].count);
+    // Loop through each model and add its data to the datasets
+    const modelNames = ["RandomForestRegressor", "XGBRegressor", "ExtraTreesRegressor", "DecisionTreeRegressor"];
+    modelNames.forEach((modelName) => {
       const color = getModelColor(modelName);
+      const modelData = data.map(item => item[modelName]);
       datasets.push({
         label: `Predicted Price - ${modelName}`,
-        data: predictedPrices,
+        data: modelData,
         fill: false,
         borderColor: color,
         tension: 0.4,
@@ -68,6 +53,7 @@ const DaysLeftPriceComparison = () => {
       datasets: datasets,
     });
   };
+
 
   const getModelColor = (modelName) => {
     const colorMap = {

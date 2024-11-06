@@ -9,6 +9,7 @@ import json
 from functools import lru_cache
 import http.client
 from MakeHeatMapData import convert_and_save_heatmap_data
+from collections import defaultdict
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -126,49 +127,50 @@ async def get_prediction(data: PredictionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/data")
-async def get_data():
-    try:
-        # Read your dataset
-        df = pd.read_csv('backend/data.csv')
-        # Convert DataFrame to a list of dictionaries
-        data = df.to_dict(orient='records')
-        return data
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@lru_cache(maxsize=100)
-def load_model_results():
-    results_file = 'Data/Results_merged.csv'
-    data = {}
-    try:
-        df = pd.read_csv(results_file)
-        # Ensure only necessary columns are used
-        df = df[['days_left', 'Actual_Price', 'Predicted_Price', 'model_name']]
-        # Group the data by 'model_name'
-        grouped = df.groupby('model_name')
-        for model_name, group in grouped:
-            # Convert each group's DataFrame to a list of dictionaries
-            data[model_name] = group[['days_left', 'Actual_Price', 'Predicted_Price']].to_dict(orient='records')
-    except FileNotFoundError as e:
-        print(f"File not found: {e}")
-        raise HTTPException(status_code=404, detail=f"File {results_file} not found")
-    except Exception as e:
-        print(f"Error reading {results_file}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-    return data
-
 @app.get("/get_model_results")
-async def get_model_results():
-    try:
-        return load_model_results()
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Unexpected error occurred.")
+def get_model_results():
+    # Check if the preprocessed file exists
+    if os.path.exists('Data/Day_Vs_Actual.csv'):
+        df = pd.read_csv('Data/Day_Vs_Actual.csv')
+        return df.to_dict(orient='records')
 
-with open('inverse_encoding_mappings.json', 'r') as f:
-    inverse_encoding_mappings = json.load(f)
+    # Load the raw data
+    df = pd.read_csv('Data/Results_merged.csv')
+
+    # Initialize a dictionary to hold the aggregated data
+    aggregated_data = defaultdict(lambda: {"actual": 0, "predicted": defaultdict(float), "count": 0})
+
+    # Process each row in the DataFrame
+    for _, row in df.iterrows():
+        day = row["days_left"]
+        model_name = row["model_name"]
+        aggregated_data[day]["actual"] += row["Actual_Price"]
+        aggregated_data[day]["count"] += 1
+        aggregated_data[day]["predicted"][model_name] += row["Predicted_Price"]
+
+    # Prepare data for DataFrame, ensuring all lists are aligned by days_left
+    days_left = sorted(aggregated_data.keys())
+    actual_prices = [(aggregated_data[day]["actual"] / aggregated_data[day]["count"]) / 4 for day in days_left]
+
+    # Prepare predicted prices for each model
+    predicted_prices = {
+        model: [aggregated_data[day]["predicted"].get(model, 0) / aggregated_data[day]["count"] for day in days_left]
+        for model in df["model_name"].unique()
+    }
+
+    # Create a DataFrame from the result
+    result_df = pd.DataFrame({
+        "days_left": days_left,
+        "actual_price": actual_prices,
+        **predicted_prices  # This will add each model's predicted prices as a separate column
+    })
+
+    # Save the result DataFrame to CSV
+    os.makedirs('Data', exist_ok=True)  # Ensure the directory exists
+    result_df.to_csv('Data/Day_Vs_Actual.csv', index=False)
+
+    # Return the result as a dictionary
+    return result_df.to_dict(orient='records')
 
 @app.get("/get_inverse_mappings")
 async def get_inverse_mappings():
@@ -254,10 +256,35 @@ class WeatherDataResponse(BaseModel):
     wind_direction: int
     date_time: str
 
+import os
+from datetime import datetime
+import json
+import http.client
+from fastapi import HTTPException
+
 @app.get("/get_weather_data", response_model=WeatherDataResponse)
 async def get_weather_data(lat: float, lon: float):
-    conn = http.client.HTTPSConnection("rapidweather.p.rapidapi.com")
+    # Define the directory and file path for cached weather data
+    cache_dir = "weather_cache"
+    os.makedirs(cache_dir, exist_ok=True)
+    cache_file = os.path.join(cache_dir, f"weather_{lat}_{lon}.json")
 
+    if os.path.exists(cache_file):
+        with open(cache_file, 'r') as f:
+            cached_data = json.load(f)
+            print("Using cached data")
+            return cached_data
+
+    # Check if the cache file exists and is from today
+    # if os.path.exists(cache_file):
+    #     with open(cache_file, 'r') as f:
+    #         cached_data = json.load(f)
+    #         cache_date = datetime.strptime(cached_data["date_time"], "%Y-%m-%d %H:%M:%S")
+    #         if cache_date.date() == datetime.now().date():
+    #             print("Using cached data")
+    #             return cached_data
+
+    conn = http.client.HTTPSConnection("rapidweather.p.rapidapi.com")
     headers = {
         'x-rapidapi-key': "d0897fb5f7msh048a3d319f81dcap103a53jsn8c7b09d1906f",
         'x-rapidapi-host': "rapidweather.p.rapidapi.com"
@@ -284,6 +311,10 @@ async def get_weather_data(lat: float, lon: float):
             "wind_direction": item["wind"]["deg"],
             "date_time": item["dt_txt"]
         }
+
+        # Save the fetched data to the cache file
+        with open(cache_file, 'w') as f:
+            json.dump(forecast_data, f)
 
         return forecast_data
 

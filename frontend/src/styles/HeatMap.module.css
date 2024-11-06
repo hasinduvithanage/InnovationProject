@@ -1,0 +1,23 @@
+.selectContainer {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.selectInput,
+.textInput {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+    border: 1px solid #d1d9e6;
+    border-radius: 6px;
+    color: #333333;
+    box-sizing: border-box;
+}
+
+.selectInput:focus,
+.textInput:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.3);
+}
