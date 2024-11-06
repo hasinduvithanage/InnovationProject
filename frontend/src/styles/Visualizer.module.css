@@ -30,7 +30,7 @@
 /* Styling for the form container */
 .formContainer {
     background-color: #ffffff;
-    padding: 60px;
+    padding: 40px;
     border-radius: 10px;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
     width: 100%;
@@ -39,14 +39,6 @@
     flex-direction: column;
     gap: 15px;
     margin-bottom: 20px;
-    margin-left: 300px;
-}
-
-.formContainerLeft {
-    position: absolute;
-    top: 200px;
-    left: 0;
-    margin-left: 20px;
 }
 
 /* Styling for form labels */
@@ -55,7 +47,7 @@
     font-size: 15px;
     font-weight: 600;
     margin-bottom: 8px;
-    align-content: center;
+    text-align: left;
 }
 
 /* Styling for input fields */
@@ -77,11 +69,11 @@
     box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.3);
 }
 
-/* Flex container for map and chart sections */
+/* Flex container for map, chart, and weather sections */
 .contentContainer {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: flex-start;
     width: 100%;
     max-width: 1200px;
@@ -96,51 +88,32 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 45px;
     width: 100%;
-    max-width: 900px;
-    height: 700px; /* Keep the height consistent with the map */
-}
-
-.chartContainerRight {
-    position: absolute;
-    top: 200px;
-    right: 50;
-    margin-right: 20px;
+    max-width: 80%;
+    height: 500px;
 }
 
 /* Weather container styling */
 .weatherContainer {
-    margin-top: 50px;
-    margin-left: 0;
-    margin-bottom: 50px;
     background-color: #ffffff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 700px;
-    max-height: 500px;
-}
-
-.weatherContainerRight {
-    position: absolute;
-    top: 200px;
-    right: 50px;
-    margin-right: 20px;
+    max-width: 50%;
+    margin-top: 20px;
 }
 
 .weatherColumns {
     display: flex;
-    justify-content: space-between;
-    gap: 60px; /* Adjust the gap as needed */
-    width: 700px;
-    height: 450px;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .weatherColumns > div {
     flex: 1;
-    border: 1px solid #ddd; /* Add border to each column */
-    padding: 15px; /* Add padding inside the border */
-    border-radius: 10px; /* Optional: Add rounded corners */
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 10px;
 }
 
 /* Weather item styling */
@@ -156,29 +129,22 @@
 /* Responsive styles */
 @media (max-width: 768px) {
     .formContainer {
-        margin-left: 0;
-        padding: 30px;
+        padding: 20px;
     }
 
-    .formContainerLeft {
-        position: static;
-        margin-left: 0;
+    .contentContainer {
+        flex-direction: column;
+        align-items: center;
     }
 
-    .chartContainerRight,
-    .weatherContainerRight {
-        position: static;
-        margin-right: 0;
-        margin-top: 20px;
+    .chartContainer,
+    .weatherContainer {
+        max-width: 100%;
+        height: auto;
     }
 
     .weatherColumns {
         flex-direction: column;
         gap: 20px;
-        width: 100%;
-    }
-
-    .weatherColumns > div {
-        width: 100%;
     }
 }
