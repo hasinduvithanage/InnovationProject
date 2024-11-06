@@ -54,7 +54,6 @@ const DaysLeftPriceComparison = () => {
     });
   };
 
-
   const getModelColor = (modelName) => {
     const colorMap = {
       'RandomForestRegressor': 'blue',
@@ -67,6 +66,7 @@ const DaysLeftPriceComparison = () => {
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top',
@@ -113,7 +113,7 @@ const DaysLeftPriceComparison = () => {
   };
 
   return (
-    <div style={{ height: '900px', width: '1500' }}>
+    <div style={{ height: '60vh', width: '70vw' }}>
       {chartData ? (
         <Line data={chartData} options={chartOptions}/>
       ) : (

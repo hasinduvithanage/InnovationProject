@@ -4,12 +4,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Dict
-import os
-import json
 from functools import lru_cache
 import http.client
 from MakeHeatMapData import convert_and_save_heatmap_data
 from collections import defaultdict
+import os
+from datetime import datetime
+import json
+import http.client
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -256,11 +258,7 @@ class WeatherDataResponse(BaseModel):
     wind_direction: int
     date_time: str
 
-import os
-from datetime import datetime
-import json
-import http.client
-from fastapi import HTTPException
+
 
 @app.get("/get_weather_data", response_model=WeatherDataResponse)
 async def get_weather_data(lat: float, lon: float):
@@ -268,13 +266,6 @@ async def get_weather_data(lat: float, lon: float):
     cache_dir = "weather_cache"
     os.makedirs(cache_dir, exist_ok=True)
     cache_file = os.path.join(cache_dir, f"weather_{lat}_{lon}.json")
-
-    # Check if the cache file exists
-    # if os.path.exists(cache_file):
-    #     with open(cache_file, 'r') as f:
-    #         cached_data = json.load(f)
-    #         print("Using cached data")
-    #         return cached_data
 
     #Check if the cache file exists and is from today
     if os.path.exists(cache_file):

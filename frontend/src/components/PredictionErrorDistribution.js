@@ -56,6 +56,7 @@ const PredictionErrorDistribution = () => {
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         display: true,
@@ -102,10 +103,10 @@ const PredictionErrorDistribution = () => {
   }, [chartData]);
 
   return (
-    <div>
-      <canvas ref={chartRef}></canvas>
-      {!chartData && <p>Loading data...</p>}
-    </div>
+      <div style={{height: '50vh', width: '70vw'}}>
+        <canvas ref={chartRef}></canvas>
+        {!chartData && <p>Loading data...</p>}
+      </div>
   );
 };
 

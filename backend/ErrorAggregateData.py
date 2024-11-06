@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 
-# Load your data
 df = pd.read_csv('Data/Results_merged.csv')
 
 # Calculate Prediction Error

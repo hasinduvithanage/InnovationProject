@@ -4,7 +4,6 @@ import React from 'react';
 import PredictionErrorDistribution from '../components/PredictionErrorDistribution';
 import PricePredictionHeatmap from '../components/PricePredictionHeatmap';
 import DaysLeftPriceComparison from '../components/DaysLeftPriceComparison.js'
-import styles from "../styles/Visualizer.module.css";
 
 const VisualizationsPage = () => {
   return (

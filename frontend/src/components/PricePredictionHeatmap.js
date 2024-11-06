@@ -62,32 +62,35 @@ const PricePredictionHeatmap = () => {
           <option value="DecisionTreeRegressor">DecisionTreeRegressor</option>
         </select>
 
-        {heatmapData ? (
-            <Plot
-                data={[
-                  {
-                    x: heatmapData.x,
-                    y: heatmapData.y,
-                    z: heatmapData.z,
-                    type: 'heatmap',
-                    colorscale: 'Viridis',
-                    reversescale: true,
-                  },
-                ]}
-                layout={{
-                  title: `Price Prediction Heatmap (${selectedModel})`,
-                  xaxis: {title: 'Days till Departure'},
-                  yaxis: {title: 'Airline'},
-                  autosize: true,
-                }}
-                useResizeHandler={true}
-                style={{width: '100%', height: '600px'}}
-            />
-        ) : (
-            <p>Loading heatmap data...</p>
-        )}
-      </div>
-  );
-};
+          <div style={{height: '50%', width: '70%'}}>
 
-export default PricePredictionHeatmap;
+            {heatmapData ? (
+                <Plot
+                    data={[
+                      {
+                        x: heatmapData.x,
+                        y: heatmapData.y,
+                        z: heatmapData.z,
+                        type: 'heatmap',
+                        colorscale: 'Viridis',
+                        reversescale: true,
+                      },
+                    ]}
+                    layout={{
+                      title: `Price Prediction Heatmap (${selectedModel})`,
+                      xaxis: {title: 'Days till Departure'},
+                      yaxis: {title: 'Airline'},
+                      autosize: true,
+                    }}
+                    useResizeHandler={true}
+                    style={{width: '100%', height: '600px'}}
+                />
+            ) : (
+                <p>Loading heatmap data...</p>
+            )}
+          </div>
+        </div>
+        );
+        };
+
+        export default PricePredictionHeatmap;
