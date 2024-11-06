@@ -12,7 +12,7 @@ const Home = () => {
     >
       <div className={styles.overlay}>
         <h1>Welcome to the Flight Price Predictor</h1>
-        <p>Accurately predict flight prices based on factors like departure time, stops, and airline.</p>
+        {/*<p>Accurately predict flight prices based on factors like departure time, stops, and airline.</p>*/}
 
         <div className={styles.infoCards}>
           <div className={styles.card}>

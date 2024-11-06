@@ -19,38 +19,53 @@ function PredictionVisualization() {
     const [weatherData, setWeatherData] = useState(null);
 
     const modelNames = ["RandomForestRegressor", "XGBRegressor", "ExtraTreesRegressor", "DecisionTreeRegressor"];
+        const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-    const handleSubmit = async () => {
-        try {
-            const responses = await Promise.all(
-                modelNames.map(model =>
-                    axios.post("http://localhost:8000/predict", {
-                        airline: airline,
-                        flight: "SG-8709",
-                        source_city: sourceCity,
-                        departure_time: departureTime,
-                        stops: stops,
-                        arrival_time: arrivalTime,
-                        destination_city: destinationCity,
-                        class: classType,
-                        duration: parseFloat('5'),
-                        days_left: parseInt(daysLeft),
-                        model_name: model,  // Ensure model_name is sent correctly
-                    })
-                )
-            );
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
-            const allPredictions = responses.map((response, index) => ({
-                model: modelNames[index],
-                price: response.data.price,
-            }));
 
-            setPredictions(allPredictions);
-            console.log("Updated Predictions:", allPredictions);
-        } catch (error) {
-            console.error("Error fetching predictions:", error);
-        }
-    };
+    useEffect(() => {
+        const handleSubmit = async () => {
+            try {
+                const responses = await Promise.all(
+                    modelNames.map(model =>
+                        axios.post("http://localhost:8000/predict", {
+                            airline: airline,
+                            flight: "SG-8709",
+                            source_city: sourceCity,
+                            departure_time: departureTime,
+                            stops: stops,
+                            arrival_time: arrivalTime,
+                            destination_city: destinationCity,
+                            class: classType,
+                            duration: parseFloat('5'),
+                            days_left: parseInt(daysLeft),
+                            model_name: model,
+                        })
+                    )
+                );
+
+                const allPredictions = responses.map((response, index) => ({
+                    model: modelNames[index],
+                    price: response.data.price,
+                }));
+
+                setPredictions(allPredictions);
+                console.log("Updated Predictions:", allPredictions);
+            } catch (error) {
+                console.error("Error fetching predictions:", error);
+            }
+        };
+
+        handleSubmit();  // Call handleSubmit when any dependency changes
+    }, [airline, sourceCity, departureTime, stops, arrivalTime, destinationCity, classType, daysLeft, duration]);
+
 
 
     // Prepare data for the bar chart
@@ -94,7 +109,7 @@ function PredictionVisualization() {
         layout: { padding: 20 },
     };
 
-        useEffect(() => {
+    useEffect(() => {
         if (sourceCity && destinationCity) {
             fetchWeatherData(sourceCity, destinationCity);
         }
@@ -131,26 +146,20 @@ function PredictionVisualization() {
     return (
         <div className={styles.homemain}>
             <h2 className={styles.heading}>Flight Price Predictor</h2>
-            <form onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmit();
-            }} className={`${styles.formContainer} ${styles.formContainerLeft}`}>
-                {/* Form Inputs */}
 
+            <div className={`${styles.formContainer} ${styles.formContainerLeft}`}>
                 <label className={styles.labelText}>Air Line:</label>
-                <select value={sourceCity} onChange={(e) => setSourceCity(e.target.value)}
-                        className={styles.selectInput}>
-                    <option value="Air_India">Air India</option>
-                    <option value="AirAsia">AirAsia</option>
-                    <option value="GO_FIRST">GO FIRST</option>
-                    <option value="Indigo">Indigo</option>
-                    <option value="SpiceJet">SpiceJet</option>
-                    <option value="Vistara">Vistara</option>
+                <select value={airline} onChange={(e) => setAirline(e.target.value)} className={styles.selectInput}>
+                    <option>Air India</option>
+                    <option>AirAsia</option>
+                    <option>GO FIRST</option>
+                    <option>Indigo</option>
+                    <option>SpiceJet</option>
+                    <option>Vistara</option>
                 </select>
 
                 <label className={styles.labelText}>Source City:</label>
-                <select value={sourceCity} onChange={(e) => setSourceCity(e.target.value)}
-                        className={styles.selectInput}>
+                <select value={sourceCity} onChange={(e) => setSourceCity(e.target.value)} className={styles.selectInput}>
                     <option>Delhi</option>
                     <option>Mumbai</option>
                     <option>Bangalore</option>
@@ -160,8 +169,7 @@ function PredictionVisualization() {
                 </select>
 
                 <label className={styles.labelText}>Departure Time:</label>
-                <select value={departureTime} onChange={(e) => setDepartureTime(e.target.value)}
-                        className={styles.selectInput}>
+                <select value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} className={styles.selectInput}>
                     <option>Evening</option>
                     <option>Early_Morning</option>
                     <option>Morning</option>
@@ -178,8 +186,7 @@ function PredictionVisualization() {
                 </select>
 
                 <label className={styles.labelText}>Arrival Time:</label>
-                <select value={arrivalTime} onChange={(e) => setArrivalTime(e.target.value)}
-                        className={styles.selectInput}>
+                <select value={arrivalTime} onChange={(e) => setArrivalTime(e.target.value)} className={styles.selectInput}>
                     <option>Night</option>
                     <option>Morning</option>
                     <option>Early_Morning</option>
@@ -189,8 +196,7 @@ function PredictionVisualization() {
                 </select>
 
                 <label className={styles.labelText}>Destination City:</label>
-                <select value={destinationCity} onChange={(e) => setDestinationCity(e.target.value)}
-                        className={styles.selectInput}>
+                <select value={destinationCity} onChange={(e) => setDestinationCity(e.target.value)} className={styles.selectInput}>
                     <option>Delhi</option>
                     <option>Mumbai</option>
                     <option>Bangalore</option>
@@ -205,7 +211,6 @@ function PredictionVisualization() {
                     <option>Business</option>
                 </select>
 
-
                 <label className={styles.labelText}>Days Left:</label>
                 <input
                     type="number"
@@ -215,51 +220,52 @@ function PredictionVisualization() {
                     onChange={(e) => setDaysLeft(e.target.value)}
                     className={styles.textInput}
                 />
-
-                <button type="submit" className={styles.submitButton}>Get Predictions</button>
-            </form>
+            </div>
 
             {predictions.length > 0 && (
-    <div className={`${styles.chartContainer} ${styles.chartContainerRight}`}>
-        <Bar data={chartData} options={chartOptions} height={400} key={predictions.length}/>
-        <div className={styles.averagePrice}>
-            <h3>Average Predicted Price: {averagePrice.toFixed(2)} INR</h3>
-        </div>
-        {weatherData && (
-            <div className={styles.weatherContainer}>
-                <h3>Weather Data</h3>
-                <div className={styles.weatherColumns}>
-                    <div>
-                        <h4>Source City Weather:</h4>
-                        <div className={styles.weatherItem}>
-                            <p><strong>Date & Time:</strong> {weatherData.source.data.date_time}</p>
-                            <p><strong>Temperature:</strong> {weatherData.source.data.temperature} K</p>
-                            <p><strong>Feels Like:</strong> {weatherData.source.data.feels_like} K</p>
-                            <p><strong>Min Temp:</strong> {weatherData.source.data.temp_min} K</p>
-                            <p><strong>Max Temp:</strong> {weatherData.source.data.temp_max} K</p>
-                            <p><strong>Humidity:</strong> {weatherData.source.data.humidity}%</p>
-                            <p><strong>Weather:</strong> {weatherData.source.data.weather}</p>
-                            <p><strong>Wind Speed:</strong> {weatherData.source.data.wind_speed} m/s</p>
-                        </div>
+                <div className={`${styles.chartContainer} ${styles.chartContainerRight}`}>
+                    <Bar data={chartData} options={chartOptions} height={400} key={predictions.length}/>
+                    <div className={styles.averagePrice}>
+                        <h3>Average Predicted Price: {averagePrice.toFixed(2)} INR</h3>
                     </div>
-                    <div>
-                        <h4>Destination City Weather:</h4>
-                        <div className={styles.weatherItem}>
-                            <p><strong>Date & Time:</strong> {weatherData.destination.data.date_time}</p>
-                            <p><strong>Temperature:</strong> {weatherData.destination.data.temperature} K</p>
-                            <p><strong>Feels Like:</strong> {weatherData.destination.data.feels_like} K</p>
-                            <p><strong>Min Temp:</strong> {weatherData.destination.data.temp_min} K</p>
-                            <p><strong>Max Temp:</strong> {weatherData.destination.data.temp_max} K</p>
-                            <p><strong>Humidity:</strong> {weatherData.destination.data.humidity}%</p>
-                            <p><strong>Weather:</strong> {weatherData.destination.data.weather}</p>
-                            <p><strong>Wind Speed:</strong> {weatherData.destination.data.wind_speed} m/s</p>
+                </div>
+            )}
+
+            {weatherData && (
+                <div className={`${styles.weatherContainer} ${styles.weatherContainerRight}`}>
+                    <div className={styles.averagePrice}>
+                        <h3>Weather Data</h3>
+                    </div>
+                    <div className={styles.weatherColumns}>
+                        <div>
+                            <h4>{sourceCity} Weather:</h4>
+                            <div className={styles.weatherItem}>
+                                <p><strong>Date & Time:</strong> {weatherData.source.data.date_time}</p>
+                                <p><strong>Temperature:</strong> {weatherData.source.data.temperature} K</p>
+                                <p><strong>Feels Like:</strong> {weatherData.source.data.feels_like} K</p>
+                                <p><strong>Min Temp:</strong> {weatherData.source.data.temp_min} K</p>
+                                <p><strong>Max Temp:</strong> {weatherData.source.data.temp_max} K</p>
+                                <p><strong>Humidity:</strong> {weatherData.source.data.humidity}%</p>
+                                <p><strong>Weather:</strong> {weatherData.source.data.weather}</p>
+                                <p><strong>Wind Speed:</strong> {weatherData.source.data.wind_speed} m/s</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h4>{destinationCity} Weather:</h4>
+                            <div className={styles.weatherItem}>
+                                <p><strong>Date & Time:</strong> {weatherData.destination.data.date_time}</p>
+                                <p><strong>Temperature:</strong> {weatherData.destination.data.temperature} K</p>
+                                <p><strong>Feels Like:</strong> {weatherData.destination.data.feels_like} K</p>
+                                <p><strong>Min Temp:</strong> {weatherData.destination.data.temp_min} K</p>
+                                <p><strong>Max Temp:</strong> {weatherData.destination.data.temp_max} K</p>
+                                <p><strong>Humidity:</strong> {weatherData.destination.data.humidity}%</p>
+                                <p><strong>Weather:</strong> {weatherData.destination.data.weather}</p>
+                                <p><strong>Wind Speed:</strong> {weatherData.destination.data.wind_speed} m/s</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        )}
-    </div>
-)}
+            )}
         </div>
     );
 }

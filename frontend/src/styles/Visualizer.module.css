@@ -30,15 +30,16 @@
 /* Styling for the form container */
 .formContainer {
     background-color: #ffffff;
-    padding: 30px;
+    padding: 60px;
     border-radius: 10px;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
     width: 100%;
-    max-width: 500px;
+    max-width: 600px;
     display: flex;
     flex-direction: column;
     gap: 15px;
     margin-bottom: 20px;
+    margin-left: 300px;
 }
 
 .formContainerLeft {
@@ -47,7 +48,6 @@
     left: 0;
     margin-left: 20px;
 }
-
 
 /* Styling for form labels */
 .labelText {
@@ -77,29 +77,6 @@
     box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.3);
 }
 
-/* Styling for the submit button */
-.submitButton {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    color: #ffffff;
-    background-color: #007bff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 10px;
-}
-
-.submitButton:hover {
-    background-color: #0056b3;
-}
-
-.submitButton:focus {
-    outline: none;
-}
-
 /* Flex container for map and chart sections */
 .contentContainer {
     display: flex;
@@ -119,14 +96,14 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 45px;
     width: 100%;
-    max-width: 800px;
-    height: 450px; /* Keep the height consistent with the map */
+    max-width: 900px;
+    height: 700px; /* Keep the height consistent with the map */
 }
 
 .chartContainerRight {
     position: absolute;
     top: 200px;
-    right: 50px;
+    right: 50;
     margin-right: 20px;
 }
 
@@ -144,6 +121,12 @@
     max-height: 500px;
 }
 
+.weatherContainerRight {
+    position: absolute;
+    top: 200px;
+    right: 50px;
+    margin-right: 20px;
+}
 
 .weatherColumns {
     display: flex;
@@ -168,4 +151,34 @@
 
 .weatherItem:last-child {
     border-bottom: none;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .formContainer {
+        margin-left: 0;
+        padding: 30px;
+    }
+
+    .formContainerLeft {
+        position: static;
+        margin-left: 0;
+    }
+
+    .chartContainerRight,
+    .weatherContainerRight {
+        position: static;
+        margin-right: 0;
+        margin-top: 20px;
+    }
+
+    .weatherColumns {
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+    }
+
+    .weatherColumns > div {
+        width: 100%;
+    }
 }
