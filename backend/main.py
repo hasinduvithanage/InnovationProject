@@ -269,20 +269,21 @@ async def get_weather_data(lat: float, lon: float):
     os.makedirs(cache_dir, exist_ok=True)
     cache_file = os.path.join(cache_dir, f"weather_{lat}_{lon}.json")
 
-    if os.path.exists(cache_file):
-        with open(cache_file, 'r') as f:
-            cached_data = json.load(f)
-            print("Using cached data")
-            return cached_data
-
-    # Check if the cache file exists and is from today
+    # Check if the cache file exists
     # if os.path.exists(cache_file):
     #     with open(cache_file, 'r') as f:
     #         cached_data = json.load(f)
-    #         cache_date = datetime.strptime(cached_data["date_time"], "%Y-%m-%d %H:%M:%S")
-    #         if cache_date.date() == datetime.now().date():
-    #             print("Using cached data")
-    #             return cached_data
+    #         print("Using cached data")
+    #         return cached_data
+
+    #Check if the cache file exists and is from today
+    if os.path.exists(cache_file):
+        with open(cache_file, 'r') as f:
+            cached_data = json.load(f)
+            cache_date = datetime.strptime(cached_data["date_time"], "%Y-%m-%d %H:%M:%S")
+            if cache_date.date() == datetime.now().date():
+                print("Using cached data")
+                return cached_data
 
     conn = http.client.HTTPSConnection("rapidweather.p.rapidapi.com")
     headers = {
