@@ -169,7 +169,7 @@ def load_model_results():
         grouped = df.groupby('model_name')
         for model_name, group in grouped:
             # Convert each group's DataFrame to a list of dictionaries
-            data[model_name] = group[['days_left', 'Actual_Price', 'Predicted_Price', 'Prediction_Error']].to_dict(orient='records')
+            data[model_name] = group[['days_left', 'Actual_Price', 'Predicted_Price']].to_dict(orient='records')
     except FileNotFoundError as e:
         print(f"File not found: {e}")
         raise HTTPException(status_code=404, detail=f"File {results_file} not found")
@@ -215,4 +215,35 @@ def get_heatmap_data(model_name: str = 'RandomForestRegressor'):
         raise HTTPException(status_code=422, detail=f"Data error: {str(value_error)}")
     except Exception as e:
         # Generic error handling for unexpected issues
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
+
+@app.get("/get_model_results_prediction_error")
+def get_model_results():
+    try:
+        # Load the dataset
+        if not os.path.exists('Data/Results_merged.csv'):
+            raise FileNotFoundError("Data/Results_merged.csv not found.")
+
+        df = pd.read_csv('Data/Results_merged.csv')
+
+        # Ensure required columns are present
+        required_columns = {'model_name', 'Predicted_Price', 'Actual_Price'}
+        if not required_columns.issubset(df.columns):
+            raise ValueError(f"Dataset must contain columns: {required_columns}")
+
+        # Calculate prediction error
+        df['Prediction_Error'] = df['Predicted_Price'] - df['Actual_Price']
+
+        # Aggregate prediction errors by model
+        model_errors = df.groupby('model_name')['Prediction_Error'].apply(list).to_dict()
+
+        # Return aggregated data as JSON
+        return model_errors
+
+    except FileNotFoundError as fnf_error:
+        raise HTTPException(status_code=404, detail=str(fnf_error))
+    except ValueError as value_error:
+        raise HTTPException(status_code=422, detail=f"Data error: {str(value_error)}")
+    except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")

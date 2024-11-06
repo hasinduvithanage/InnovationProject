@@ -17,23 +17,13 @@ const VisualizationsPage = () => {
       {/*  <ModelPerformanceOverTime />*/}
       {/*</section>*/}
 
-      {/*<section>*/}
-      {/*  <h2>2. Route-Specific Price Comparison Across Models</h2>*/}
-      {/*  <RoutePriceComparison />*/}
-      {/*</section>*/}
-
       <section>
-        <h2>3. Prediction Error Distribution by Model</h2>
+        <h2>2. Prediction Error Distribution by Model</h2>
         <PredictionErrorDistribution />
       </section>
 
-      {/*<section>*/}
-      {/*  <h2>4. Top 10 Most and Least Expensive Routes Predicted by Models</h2>*/}
-      {/*  <TopRoutesByModel />*/}
-      {/*</section>*/}
-
       <section>
-        <h2>5. Price Prediction Heatmap by Days till Departure and Airline</h2>
+        <h2>3. Price Prediction Heatmap by Days till Departure and Airline</h2>
         <PricePredictionHeatmap />
       </section>
     </div>

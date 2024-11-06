@@ -1,17 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Chart, registerables } from 'chart.js';
-import * as ChartBoxAndViolin from 'chartjs-chart-box-and-violin-plot'; // Import entire module as namespace
 
-// Register all components from Chart.js and the box-and-violin plot plugin
-Chart.register(...registerables, ChartBoxAndViolin);
+// Register core Chart.js components
+Chart.register(...registerables);
 
 const PredictionErrorDistribution = () => {
   const [chartData, setChartData] = useState(null);
   const chartRef = useRef(null);
 
   useEffect(() => {
-    axios.get('http://localhost:8000/get_model_results')
+    axios.get('http://localhost:8000/get_model_results_prediction_error')
       .then(response => {
         const data = response.data;
         processChartData(data);
@@ -21,16 +20,26 @@ const PredictionErrorDistribution = () => {
       });
   }, []);
 
+  const getRandomSample = (arr, sampleSize) => {
+    const shuffled = arr.slice().sort(() => 0.5 - Math.random()); // Shuffle array
+    return shuffled.slice(0, sampleSize); // Return first `sampleSize` elements
+  };
+
   const processChartData = (data) => {
     const models = Object.keys(data);
-    const datasets = [{
-      label: 'Prediction Error Distribution',
-      data: models.map(model => data[model]),
-      backgroundColor: models.map(model => getModelColor(model)),
-    }];
+    const datasets = models.map(model => {
+      const sampledData = getRandomSample(data[model], 1000); // Sample 1000 points
+      return {
+        label: model,
+        data: sampledData,
+        backgroundColor: getModelColor(model),
+        borderColor: getModelColor(model),
+        borderWidth: 1,
+      };
+    });
 
     setChartData({
-      labels: models,
+      labels: datasets[0].data.map((_, index) => `Sample ${index + 1}`),
       datasets: datasets,
     });
   };
@@ -58,6 +67,13 @@ const PredictionErrorDistribution = () => {
         title: {
           display: true,
           text: 'Prediction Error'
+        },
+        beginAtZero: true
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Sample'
         }
       }
     }
@@ -72,7 +88,7 @@ const PredictionErrorDistribution = () => {
 
       // Create a new chart instance
       chartRef.current.chartInstance = new Chart(chartRef.current, {
-        type: 'boxplot',
+        type: 'bar', // Use 'bar' for combined bar chart
         data: chartData,
         options: chartOptions,
       });
