@@ -2,47 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Line } from 'react-chartjs-2';
 
-const chartOptions = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: 'top',
-      onClick: (e, legendItem, legend) => {
-        const index = legendItem.datasetIndex;
-        const ci = legend.chart;
-        ci.getDatasetMeta(index).hidden = !ci.getDatasetMeta(index).hidden;
-        ci.update();
-      },
-    },
-    title: {
-      display: true,
-      text: 'Days Left vs Actual and Predicted Ticket Prices',
-    },
-  },
-  zoom: {
-      pan: {
-        enabled: true,
-        mode: 'x',
-      },
-      zoom: {
-        wheel: {
-          enabled: true,
-        },
-        pinch: {
-          enabled: true,
-        },
-        mode: 'x',
-      },
-    },
-  options: {
-        responsive: true,
-        maintainAspectRatio: false
-    }
-};
-
-
-
-
 const DaysLeftPriceComparison = () => {
   const [chartData, setChartData] = useState(null);
 
@@ -86,8 +45,8 @@ const DaysLeftPriceComparison = () => {
         data: actualPrices,
         fill: false,
         borderColor: 'red',
-        tension: 0.4, // Smoother line
-        pointRadius: 2, // Smaller points for better clarity
+        tension: 0.4,
+        pointRadius: 2,
       },
     ];
 
@@ -99,8 +58,8 @@ const DaysLeftPriceComparison = () => {
         data: predictedPrices,
         fill: false,
         borderColor: color,
-        tension: 0.4, // Smoother line
-        pointRadius: 2, // Smaller points
+        tension: 0.4,
+        pointRadius: 2,
       });
     });
 
@@ -110,7 +69,6 @@ const DaysLeftPriceComparison = () => {
     });
   };
 
-  // Function to assign colors to models
   const getModelColor = (modelName) => {
     const colorMap = {
       'RandomForestRegressor': 'blue',
@@ -121,24 +79,19 @@ const DaysLeftPriceComparison = () => {
     return colorMap[modelName] || 'gray';
   };
 
-  // Chart options
   const chartOptions = {
     responsive: true,
     plugins: {
       legend: {
         position: 'top',
         labels: {
-          font: {
-            size: 12,
-          },
+          font: { size: 12 },
         },
       },
       title: {
         display: true,
         text: 'Days Left vs Actual and Predicted Ticket Prices',
-        font: {
-          size: 18,
-        },
+        font: { size: 18 },
       },
       tooltip: {
         mode: 'index',
@@ -153,38 +106,30 @@ const DaysLeftPriceComparison = () => {
         title: {
           display: true,
           text: 'Days Left for Departure',
-          font: {
-            size: 14,
-          },
+          font: { size: 14 },
         },
         ticks: {
-          maxTicksLimit: 20, // Reduce the number of ticks
-          font: {
-            size: 12,
-          },
+          maxTicksLimit: 20,
+          font: { size: 12 },
         },
       },
       y: {
         title: {
           display: true,
           text: 'Price (INR)',
-          font: {
-            size: 14,
-          },
+          font: { size: 14 },
         },
         ticks: {
-          font: {
-            size: 12,
-          },
+          font: { size: 12 },
         },
       },
     },
   };
 
   return (
-    <div>
+    <div style={{ height: '900px', width: '1500' }}>
       {chartData ? (
-        <Line data={chartData} options={chartOptions} height={400} />
+        <Line data={chartData} options={chartOptions}/>
       ) : (
         <p>Loading chart data...</p>
       )}

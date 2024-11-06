@@ -7,6 +7,7 @@ from typing import List, Dict
 import os
 import json
 from functools import lru_cache
+import http.client
 from MakeHeatMapData import convert_and_save_heatmap_data
 
 # Initialize FastAPI app
@@ -170,12 +171,12 @@ with open('inverse_encoding_mappings.json', 'r') as f:
     inverse_encoding_mappings = json.load(f)
 
 @app.get("/get_inverse_mappings")
-def get_inverse_mappings():
+async def get_inverse_mappings():
     return inverse_encoding_mappings
 
 
 @app.get("/get_heatmap_data")
-def get_heatmap_data(model_name: str = 'RandomForestRegressor'):
+async def get_heatmap_data(model_name: str = 'RandomForestRegressor'):
     try:
         # Determine the file name based on the model name
         file_name = f'heatmap_data_{model_name}.json'
@@ -198,7 +199,7 @@ def get_heatmap_data(model_name: str = 'RandomForestRegressor'):
 
 
 @app.get("/get_model_results_prediction_error")
-def get_model_results():
+async def get_model_results():
     try:
         # Load the dataset
         if not os.path.exists('Data/Results_merged.csv'):
@@ -226,3 +227,65 @@ def get_model_results():
         raise HTTPException(status_code=422, detail=f"Data error: {str(value_error)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
+
+
+class WeatherForecast(BaseModel):
+    temperature: float
+    feels_like: float
+    temp_min: float
+    temp_max: float
+    pressure: int
+    humidity: int
+    weather: str
+    wind_speed: float
+    wind_direction: int
+    date_time: str
+
+class WeatherDataResponse(BaseModel):
+    temperature: float
+    feels_like: float
+    temp_min: float
+    temp_max: float
+    pressure: int
+    humidity: int
+    weather: str
+    wind_speed: float
+    wind_direction: int
+    date_time: str
+
+# @app.get("/get_weather_data", response_model=WeatherDataResponse)
+# async def get_weather_data(lat: float, lon: float):
+#     conn = http.client.HTTPSConnection("rapidweather.p.rapidapi.com")
+#
+#     headers = {
+#         'x-rapidapi-key': "d0897fb5f7msh048a3d319f81dcap103a53jsn8c7b09d1906f",
+#         'x-rapidapi-host': "rapidweather.p.rapidapi.com"
+#     }
+#
+#     try:
+#         # Make API request to fetch weather data
+#         conn.request("GET", f"/data/2.5/forecast?lat={lat}&lon={lon}", headers=headers)
+#         res = conn.getresponse()
+#         data = res.read()
+#         raw_data = json.loads(data.decode("utf-8"))
+#
+#         # Process and structure weather data to only return relevant information
+#         item = raw_data["list"][0]
+#         forecast_data = {
+#             "temperature": item["main"]["temp"],
+#             "feels_like": item["main"]["feels_like"],
+#             "temp_min": item["main"]["temp_min"],
+#             "temp_max": item["main"]["temp_max"],
+#             "pressure": item["main"]["pressure"],
+#             "humidity": item["main"]["humidity"],
+#             "weather": item["weather"][0]["description"],
+#             "wind_speed": item["wind"]["speed"],
+#             "wind_direction": item["wind"]["deg"],
+#             "date_time": item["dt_txt"]
+#         }
+#
+#         return forecast_data
+#
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))

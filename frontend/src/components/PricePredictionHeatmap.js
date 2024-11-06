@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Plot from 'react-plotly.js';
+import styles from "../styles/Visualizer.module.css";
 
 const PricePredictionHeatmap = () => {
   const [heatmapData, setHeatmapData] = useState(null);
@@ -48,11 +49,11 @@ const PricePredictionHeatmap = () => {
 
   return (
     <div>
-      <label htmlFor="model-select">Select Model: </label>
+      <label className={styles.labelText}>Select Model: </label>
       <select
         id="model-select"
         value={selectedModel}
-        onChange={(e) => setSelectedModel(e.target.value)}
+        onChange={(e) => setSelectedModel(e.target.value)} className={styles.selectInput}>
       >
         <option value="RandomForestRegressor">RandomForestRegressor</option>
         <option value="XGBRegressor">XGBRegressor</option>
