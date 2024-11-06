@@ -14,34 +14,48 @@ function PredictionVisualization() {
     const [daysLeft, setDaysLeft] = useState(10);
     const [predictions, setPredictions] = useState([]);
 
+    const modelNames = ["RandomForestRegressor", "XGBRegressor", "ExtraTreesRegressor", "DecisionTreeRegressor"];
+
     const handleSubmit = async () => {
         try {
-            const response = await axios.post("http://localhost:8000/predict_airline_prices", {
-                airline: "SpiceJet",
-                flight: "SG-8709",
-                source_city: sourceCity,
-                departure_time: departureTime,
-                stops: stops,
-                arrival_time: arrivalTime,
-                destination_city: destinationCity,
-                class: classType,
-                duration: parseFloat(duration),
-                days_left: parseInt(daysLeft),
-            });
+            const responses = await Promise.all(
+                modelNames.map(model =>
+                    axios.post("http://localhost:8000/predict", {
+                        airline: "SpiceJet",
+                        flight: "SG-8709",
+                        source_city: sourceCity,
+                        departure_time: departureTime,
+                        stops: stops,
+                        arrival_time: arrivalTime,
+                        destination_city: destinationCity,
+                        class: classType,
+                        duration: parseFloat(duration),
+                        days_left: parseInt(daysLeft),
+                        model_name: model,  // Ensure model_name is sent correctly
+                    })
+                )
+            );
 
-            setPredictions(response.data.airline_prices);
+            const allPredictions = responses.map((response, index) => ({
+                model: modelNames[index],
+                price: response.data.price,
+            }));
+
+            setPredictions(allPredictions);
+            console.log("Updated Predictions:", allPredictions);
         } catch (error) {
             console.error("Error fetching predictions:", error);
         }
     };
 
+
     // Prepare data for the bar chart
     const chartData = {
-        labels: predictions.map(prediction => Object.keys(prediction)[0]),
+        labels: predictions.map(prediction => prediction.model),
         datasets: [
             {
                 label: "Predicted Flight Prices",
-                data: predictions.map(prediction => Object.values(prediction)[0]),
+                data: predictions.map(prediction => prediction.price),
                 backgroundColor: "rgba(75,192,192,0.6)",
                 borderColor: "rgba(75,192,192,1)",
                 borderWidth: 1,
@@ -49,11 +63,6 @@ function PredictionVisualization() {
         ],
     };
 
-    // Dynamically determine the minimum y-axis value
-    const minPredictionValue = Math.min(...predictions.map(prediction => Object.values(prediction)[0]));
-    const yAxisMin = minPredictionValue * 0.9; // Set min to 90% of the lowest value for padding
-
-    // Chart options with dynamic y-axis minimum
     const chartOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -61,54 +70,27 @@ function PredictionVisualization() {
             legend: {
                 position: "top",
                 labels: {
-                    font: {
-                        size: 16,
-                    },
+                    font: { size: 16 },
                 },
             },
         },
         scales: {
             x: {
-                title: {
-                    display: true,
-                    text: "Airlines",
-                    font: {
-                        size: 18,
-                    },
-                },
-                ticks: {
-                    font: {
-                        size: 14,
-                    },
-                },
+                title: { display: true, text: "Models", font: { size: 18 } },
+                ticks: { font: { size: 14 } },
             },
             y: {
-                title: {
-                    display: true,
-                    text: "Price (in currency units)",
-                    font: {
-                        size: 18,
-                    },
-                },
-                ticks: {
-                    font: {
-                        size: 14,
-                    },
-                    beginAtZero: false, // Ensure y-axis does not start at zero
-                    min: yAxisMin, // Explicitly set the minimum
-                    suggestedMin: yAxisMin, // Suggested min to support dynamic scaling
-                },
+                title: { display: true, text: "Price (in currency units)", font: { size: 18 } },
             },
         },
-        layout: {
-            padding: 20,
-        },
+        layout: { padding: 20 },
     };
 
     return (
         <div className={styles.homemain}>
             <h2 className={styles.heading}>Flight Price Predictor</h2>
             <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className={styles.formContainer}>
+                {/* Form Inputs */}
                 <label className={styles.labelText}>Source City:</label>
                 <select value={sourceCity} onChange={(e) => setSourceCity(e.target.value)} className={styles.selectInput}>
                     <option>Delhi</option>
@@ -188,7 +170,7 @@ function PredictionVisualization() {
 
             <div className={styles.chartContainer}>
                 {predictions.length > 0 && (
-                    <Bar data={chartData} options={chartOptions} height={400} />
+                    <Bar data={chartData} options={chartOptions} height={400} key={predictions.length} />
                 )}
             </div>
         </div>

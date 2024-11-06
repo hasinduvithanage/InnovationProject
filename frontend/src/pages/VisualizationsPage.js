@@ -1,21 +1,19 @@
 // src/pages/VisualizationsPage.js
 
 import React from 'react';
-import ModelPerformanceOverTime from '../components/ModelPerformanceOverTime';
-import RoutePriceComparison from '../components/RoutePriceComparison';
 import PredictionErrorDistribution from '../components/PredictionErrorDistribution';
-import TopRoutesByModel from '../components/TopRoutesByModel';
 import PricePredictionHeatmap from '../components/PricePredictionHeatmap';
+import DaysLeftPriceComparison from '../components/DaysLeftPriceComparison.js'
 
 const VisualizationsPage = () => {
   return (
     <div style={{ padding: '20px' }}>
       <h1>Flight Price Predictions Analysis</h1>
 
-      {/*<section>*/}
-      {/*  <h2>1. Model Performance Comparison Over Time</h2>*/}
-      {/*  <ModelPerformanceOverTime />*/}
-      {/*</section>*/}
+      <section>
+        <h2>1. Days Left Actual vs Predicted</h2>
+        <DaysLeftPriceComparison />
+      </section>
 
       <section>
         <h2>2. Prediction Error Distribution by Model</h2>

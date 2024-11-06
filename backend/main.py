@@ -57,7 +57,7 @@ class PredictionRequest(BaseModel):
     class_type: str = Field(..., alias="class", example="Economy")
     duration: float = Field(..., example=2.17)
     days_left: int = Field(..., example=1)
-    model_name: Optional[str] = Field('ExtraTreesRegressor', example="ExtraTreesRegressor")
+    model_name: Optional[str] = Field(None, example="ExtraTreesRegressor")
 
 
 
@@ -109,11 +109,11 @@ async def get_prediction(data: PredictionRequest):
         # Preprocess the input data
         input_df = preprocess_input(data)
 
-        # Get the selected model
-        selected_model = models.get(data.model_name)
-        if not selected_model:
-            selected_model = models['ExtraTreesRegressor']
-            #raise HTTPException(status_code=400, detail="Model not found")
+        # Ensure model_name is provided in the request and use it to select the model
+        if data.model_name not in models:
+            raise HTTPException(status_code=400, detail="Invalid model name provided.")
+
+        selected_model = models[data.model_name]
 
         # Predict the flight price using the selected model
         prediction = selected_model.predict(input_df)[0]
@@ -124,27 +124,6 @@ async def get_prediction(data: PredictionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# Endpoint for predicting prices for all airlines
-@app.post("/predict_airline_prices", response_model=AirlinePriceResponse)
-async def get_airline_prices(data: PredictionRequest):
-    try:
-        airline_prices = []
-        for airline in all_airlines:
-            # Preprocess the input data for each airline
-            input_df = preprocess_input(data, airline)
-
-            # Predict the price for the current airline
-            predicted_price = model.predict(input_df)[0]
-
-            # Append the airline and its predicted price as a dictionary
-            airline_prices.append({airline: predicted_price})
-
-        # Return the list of airline price predictions
-        return AirlinePriceResponse(airline_prices=airline_prices)
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/data")
 async def get_data():

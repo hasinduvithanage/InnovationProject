@@ -29,7 +29,7 @@ const Home = () => {
           </div>
         </div>
 
-        <Link to="/predict">
+        <Link to="/predict-visualization">
           <button className={styles.startButton}>Get Started</button>
         </Link>
       </div>
