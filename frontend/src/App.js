@@ -1,4 +1,4 @@
-// App.js
+// src/App.js
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './objects/Home';
@@ -7,7 +7,9 @@ import PredictionForm from './components/PredictionForm';
 import PredictionVisualization from './components/PredictionVisualization';
 import DataAnalysis from './objects/DataAnalysis';
 import AboutUs from './objects/AboutUs';
-import DaysLeftPriceComparison from './components/DaysLeftPriceComparison'; // Import the component
+import VisualizationsPage from './pages/VisualizationsPage';
+import DaysLeftBarChart from "./components/visualizations/DaysLeftBarChart";
+import DaysLeftPriceComparison from "./components/DaysLeftPriceComparison"; // Import the visualizations pages
 
 function App() {
   return (
@@ -19,7 +21,8 @@ function App() {
         <Route path="/predict-visualization" element={<PredictionVisualization />} />
         <Route path="/visualization" element={<DataAnalysis />} />
         <Route path="/about" element={<AboutUs />} />
-        <Route path="/days-left-comparison" element={<DaysLeftPriceComparison />} /> {/* New Route */}
+        <Route path="/visualizations" element={<VisualizationsPage />} />
+          <Route path={"/DaysLeftPriceComparison"} element={<DaysLeftPriceComparison />} />
       </Routes>
     </Router>
   );
