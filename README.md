@@ -186,6 +186,3 @@ The following table summarizes the performance of each model on the dataset:
 
 ---
 
-## License
-
-This project is licensed under the MIT License.
