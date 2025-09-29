@@ -22,7 +22,6 @@ This repository contains a full-stack web application for predicting flight tick
 - [API Endpoints](#api-endpoints)
 - [Usage](#usage)
 - [Model Evaluation Results](#model-evaluation-results)
-- [License](#license)
 
 ---
 
